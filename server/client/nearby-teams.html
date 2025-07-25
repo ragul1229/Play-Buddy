@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Nearby Teams | PlayBuddy</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+
+  <!-- Your custom styles -->
+  <link rel="stylesheet" href="css/nearby.css" />
+</head>
+<body>
+
+<h2>Nearby Teams</h2>
+
+<div class="main-container">
+  <div id="teamsContainer" class="team-list">Loading nearby teams...</div>
+  <div id="map"></div>
+</div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+  <script>
+    // Get location from localStorage
+    const locationStr = localStorage.getItem('location');
+    const teamId = localStorage.getItem('teamId'); // Optional for requests
+    const teamName = localStorage.getItem('teamName'); // Optional for greeting
+
+    if (!locationStr) {
+      alert("Please login first.");
+      window.location.href = "login.html";
+    }
+
+    // Parse and extract coordinates
+    let locationObj;
+    try {
+      locationObj = JSON.parse(locationStr);
+    } catch (err) {
+      alert("Invalid location data. Please login again.");
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    const latitude = locationObj.coordinates[1];
+    const longitude = locationObj.coordinates[0];
+
+    const teamsContainer = document.getElementById('teamsContainer');
+
+    // Initialize map
+    const map = L.map('map').setView([latitude, longitude], 13);
+
+    // Add OpenStreetMap layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    // Marker for current team
+    L.marker([latitude, longitude])
+      .addTo(map)
+      .bindPopup(teamName ? `${teamName} (You)` : 'You are here')
+      .openPopup();
+
+    // Fetch nearby teams
+    fetch(`http://localhost:5000/api/teams/nearby?latitude=${latitude}&longitude=${longitude}`)
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to fetch nearby teams');
+        return response.json();
+      })
+      .then(teams => {
+        if (!teams || teams.length === 0) {
+          teamsContainer.textContent = "No nearby teams found.";
+          return;
+        }
+
+        teamsContainer.textContent = "";
+
+        teams.forEach(team => {
+          // Prevent current team from appearing in list (optional)
+          if (team._id === teamId) return;
+
+          // Create team card
+          const card = document.createElement('div');
+          card.className = 'team-card';
+          card.innerHTML = `
+            <h3>${team.teamName}</h3>
+            <p>Coordinates: ${team.location.coordinates[1].toFixed(5)}, ${team.location.coordinates[0].toFixed(5)}</p>
+            <button onclick="sendMatchRequest('${team._id}', '${team.teamName}')">Send Match Request</button>
+          `;
+          teamsContainer.appendChild(card);
+
+          // Add team marker to map
+          L.marker([team.location.coordinates[1], team.location.coordinates[0]])
+            .addTo(map)
+            .bindPopup(`<strong>${team.teamName}</strong>`);
+        });
+      })
+      .catch(err => {
+        console.error("Error fetching nearby teams:", err);
+        teamsContainer.textContent = "Failed to load nearby teams.";
+      });
+
+    // Match request handler (optional for future use)
+    function sendMatchRequest(opponentTeamId, opponentName) {
+      alert(`Match request sent to ${opponentName}`);
+      // Future: use fetch POST to backend with teamId, opponentTeamId
+    }
+  </script>
+</body>
+</html>

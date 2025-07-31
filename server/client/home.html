@@ -1,15 +1,41 @@
-<!-- client/home.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Home | PlayBuddy</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/home.css" />
 </head>
 <body>
-  <h2 id="greeting"></h2>
-  <button id="nearbyBtn">See Nearby Teams</button>
+  <div class="main-wrapper">
+    <!-- Set Your Region Box -->
+    <div class="auth-container">
+      <h2>Set Your Region</h2>
+      <input type="text" id="region" placeholder="Enter the region" />
+      <button onclick="saveRegion()">Save Region</button>
+    </div>
 
-  <script src="js/home.js"></script>
+    <!-- Notifications Box -->
+    <div class="auth-container">
+      <h2>Nearby Teams Looking for Matches</h2>
+      <div class="notification-box">
+        No match requests available at the moment.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function saveRegion() {
+      const region = document.getElementById("region").value.trim();
+      if (!region) {
+        alert("Please enter a valid region.");
+        return;
+      }
+
+      localStorage.setItem("region", region);
+      alert("Region saved! Redirecting...");
+      window.location.href = "nearby-teams.html";
+    }
+  </script>
 </body>
 </html>

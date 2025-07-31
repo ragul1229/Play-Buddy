@@ -1,39 +1,71 @@
-/* Reset some default styles */
-body, h2, button {
+/* auth.css — used by both login.html and signup.html */
+body {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", sans-serif;
-}
-
-body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
-  background-color: #f5f9fc;
 }
 
-#greeting {
-  font-size: 28px;
-  font-weight: 600;
-  color: #333;
+.auth-container {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 400px;
+  color: #fff;
+}
+
+.auth-container h2 {
+  text-align: center;
   margin-bottom: 20px;
 }
 
-#nearbyBtn {
-  padding: 10px 20px;
+.auth-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-container input {
+  margin-bottom: 15px;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
   font-size: 16px;
-  font-weight: 500;
-  background-color: #007bff;
+}
+
+.auth-container input:focus {
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.auth-container button {
+  background-color: #1e90ff;
   color: white;
+  padding: 12px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  font-size: 16px;
+  transition: background 0.3s;
 }
 
-#nearbyBtn:hover {
-  background-color: #0056b3;
+.auth-container button:hover {
+  background-color: #3aa0ff;
+}
+
+.auth-container .link {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.auth-container .link a {
+  color: #aadfff;
+  text-decoration: none;
 }

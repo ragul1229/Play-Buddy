@@ -2,19 +2,23 @@ const mongoose = require('mongoose');
 
 const teamSchema = new mongoose.Schema({
   teamName: String,
+  password: String,
+  phoneNumber: String,
   location: {
     type: {
       type: String,
       enum: ['Point'],
-      required: true
+      default: 'Point'
     },
     coordinates: {
-      type: [Number], // [longitude, latitude]
+      type: [Number],
       required: true
-    }
+    },
+    region: String
   }
 });
 
-teamSchema.index({ location: "2dsphere" });
+// ✅ VERY IMPORTANT: Add 2dsphere index
+teamSchema.index({ location: '2dsphere' });
 
 module.exports = mongoose.model('Team', teamSchema);

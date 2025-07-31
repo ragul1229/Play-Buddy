@@ -1,52 +1,97 @@
-// nearby.js
+let map;
 
-const teamName = localStorage.getItem('teamName');
-const location = localStorage.getItem('location');
+window.initMap = async function () {
+  const storedTeam = localStorage.getItem("team");
 
-if (!teamName || !location) {
-  alert("You must login first");
-  window.location.href = 'login.html';
-}
+  if (!storedTeam) {
+    alert("You must be logged in.");
+    return;
+  }
 
-const locationParts = location.split(',');
-const latitude = parseFloat(locationParts[0]);
-const longitude = parseFloat(locationParts[1]);
+  const parsedTeam = JSON.parse(storedTeam);
+  const _id = parsedTeam._id;
 
-// Show current team info
-document.getElementById('current-team').textContent = `Logged in as: ${teamName}`;
+  // Validate coordinates
+  if (
+    !parsedTeam.location ||
+    !parsedTeam.location.coordinates ||
+    !Array.isArray(parsedTeam.location.coordinates) ||
+    parsedTeam.location.coordinates.length !== 2
+  ) {
+    alert("Invalid coordinates.");
+    return;
+  }
 
-fetch(`/api/teams/nearby?latitude=${latitude}&longitude=${longitude}`)
-  .then(response => {
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
+  const [lng, lat] = parsedTeam.location.coordinates;
+
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat, lng },
+    zoom: 14,
+  });
+
+  new google.maps.Marker({
+    position: { lat, lng },
+    map,
+    title: "Your Team Location",
+    icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+  });
+
+  try {
+    const response = await fetch("http://localhost:3000/api/teams/nearby", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        teamId: _id,
+        coordinates: { latitude: lat, longitude: lng },
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!Array.isArray(result)) {
+      throw new Error(result.msg || "Invalid response from server");
     }
-    return response.json();
-  })
-  .then(data => {
-    const container = document.getElementById('nearby-teams');
 
-    if (data.length === 0) {
-      container.innerHTML = "<p>No nearby teams found.</p>";
-      return;
-    }
+    const container = document.getElementById("teamsContainer");
+    container.innerHTML = "";
+    
 
-    data.forEach(team => {
-      const card = document.createElement('div');
-      card.className = 'team-card';
+    result.forEach((team) => {
+      const [teamLng, teamLat] = team.location.coordinates;
+
+      const marker = new google.maps.Marker({
+        position: { lat: teamLat, lng: teamLng },
+        map,
+        title: team.teamName,
+        icon: "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+      });
+
+      const infoWindow = new google.maps.InfoWindow({
+        content: `
+          <div style="color:#000;">
+            <strong>${team.teamName}</strong><br/>
+            <button onclick="alert('Match request sent!')">Request Match</button>
+          </div>
+        `,
+      });
+
+      marker.addListener("click", () => {
+        infoWindow.open(map, marker);
+      });
+
+      const card = document.createElement("div");
+      card.className = "team-card";
       card.innerHTML = `
         <h3>${team.teamName}</h3>
-        <p>Lat: ${team.location.coordinates[1]}, Lng: ${team.location.coordinates[0]}</p>
-        <button onclick="sendMatchRequest('${team._id}')">Send Match Request</button>
+        <p>Region: ${team.region || "N/A"}</p>
+        <p>Phone: ${team.phoneNumber || "N/A"}</p>
+        <button onclick="alert('Match request sent!')">Send Match Request</button>
       `;
       container.appendChild(card);
     });
-  })
-  .catch(error => {
-    console.error("Error fetching nearby teams:", error);
-  });
-
-// Dummy match request function
-function sendMatchRequest(teamId) {
-  alert(`Match request sent to team ID: ${teamId}`);
-  // You can later update this to make a POST call to `/api/teams/request-match`
-}
+  } catch (err) {
+    console.error("Error loading nearby teams:", err);
+    document.getElementById("teamsContainer").innerHTML =
+      "<p style='color:red;'>Failed to load nearby teams.</p>";
+  }
+};

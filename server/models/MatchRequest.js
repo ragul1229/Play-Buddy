@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
 
 const matchRequestSchema = new mongoose.Schema({
-  senderTeamId: { type: mongoose.Schema.Types.ObjectId, ref: 'Team' },
-  receiverTeamId: { type: mongoose.Schema.Types.ObjectId, ref: 'Team' },
-  dateTime: Date,
-  status: { type: String, default: 'pending' }, // 'pending', 'accepted', 'rejected'
-});
+  fromTeamId: { type: mongoose.Schema.Types.ObjectId, ref: 'Team' },
+  toTeamId: { type: mongoose.Schema.Types.ObjectId, ref: 'Team' },
+  status: { type: String, default: 'pending' }
+}, { timestamps: true });
 
 module.exports = mongoose.model('MatchRequest', matchRequestSchema);

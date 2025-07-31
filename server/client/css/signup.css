@@ -1,0 +1,102 @@
+/* Reset & Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  background-color: #f4f6f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+/* Auth Container for Login/Signup */
+.auth-container {
+  background-color: #ffffff;
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  width: 90%;
+  max-width: 400px;
+  animation: fadeIn 0.5s ease-in-out;
+  text-align: center;
+}
+
+.auth-container h2 {
+  font-size: 26px;
+  margin-bottom: 25px;
+  color: #2b6cb0;
+  font-weight: 700;
+}
+
+/* Forms */
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+input {
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border: 1px solid #d1d9e6;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border 0.3s ease;
+}
+
+input:focus {
+  border-color: #2b6cb0;
+  outline: none;
+}
+
+/* Buttons */
+button {
+  background-color: #2b6cb0;
+  color: white;
+  border: none;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background-color: #1a4f86;
+  transform: translateY(-1px);
+}
+
+/* Navigation Link */
+.link {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #555;
+}
+
+.link a {
+  color: #2b6cb0;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.link a:hover {
+  color: #1a4f86;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

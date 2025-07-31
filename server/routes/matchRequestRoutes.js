@@ -1,55 +1,49 @@
 const express = require('express');
 const router = express.Router();
 const MatchRequest = require('../models/MatchRequest');
+const Team = require('../models/Team'); // make sure this is required
 
-// Send match request
-router.post('/', async (req, res) => {
-  const { senderTeamId, receiverTeamId, dateTime } = req.body;
+// 📤 Send match request
+router.post('/send', async (req, res) => {
+  const { fromTeamId, toTeamId } = req.body;
 
   try {
     const newRequest = new MatchRequest({
-      senderTeamId,
-      receiverTeamId,
-      dateTime,
+      fromTeamId,
+      toTeamId,
+      status: 'pending',
     });
 
     await newRequest.save();
-    res.status(201).json({ message: 'Match request sent', request: newRequest });
+    res.status(201).json({ msg: 'Request sent successfully' });
   } catch (err) {
-    console.error('Error sending match request:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Error sending request:', err);
+    res.status(500).json({ error: 'Failed to send request' });
   }
 });
 
-// Accept match request
-router.post('/:id/accept', async (req, res) => {
+// 📥 Get inbox requests for a team
+router.get('/inbox/:teamId', async (req, res) => {
+  const { teamId } = req.params;
+
   try {
-    const request = await MatchRequest.findById(req.params.id);
-    if (!request) return res.status(404).json({ error: 'Match request not found' });
+    const requests = await MatchRequest.find({ toTeamId: teamId, status: 'pending' });
 
-    request.status = 'accepted';
-    await request.save();
+    const enriched = await Promise.all(
+      requests.map(async (request) => {
+        const fromTeam = await Team.findById(request.fromTeamId);
+        return {
+          ...request._doc,
+          fromTeamName: fromTeam?.teamName || 'Unknown',
+          location: fromTeam?.location || 'Unknown'
+        };
+      })
+    );
 
-    res.json({ message: 'Match request accepted', request });
+    res.status(200).json(enriched);
   } catch (err) {
-    console.error('Error accepting match request:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-// Reject match request
-router.post('/:id/reject', async (req, res) => {
-  try {
-    const request = await MatchRequest.findById(req.params.id);
-    if (!request) return res.status(404).json({ error: 'Match request not found' });
-
-    request.status = 'rejected';
-    await request.save();
-
-    res.json({ message: 'Match request rejected', request });
-  } catch (err) {
-    console.error('Error rejecting match request:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Inbox error:', err);
+    res.status(500).json({ error: 'Failed to fetch requests' });
   }
 });
 
